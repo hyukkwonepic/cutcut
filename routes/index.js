@@ -2,10 +2,27 @@ var express = require('express');
 var router = express.Router();
 var Url = require('./../models/Url');
 var encode = require('./../utils/encode');
+var decode = require('./../utils/decode');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.send({ title: 'Express' });
+});
+
+router.get('/:encoded_id', async (req, res) => {
+  try {
+    var base58Id = req.params.encoded_id;
+    var id = decode(base58Id);
+
+    const doc = await Url.findOne({ _id: id });
+    if (doc) {
+      res.redirect(doc.long_url);
+    } else {
+      res.redirect(process.env.HOST);
+    }
+  } catch (e) {
+    res.status(400).send(e);
+  }
 });
 
 router.post('/api/shorten', async (req, res) => {
